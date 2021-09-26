@@ -10,8 +10,8 @@ from config import *
 
 __author__ = 'Annie Wu'
 __version__ = '1.1.0'
-__maintainer__ = 'Annie Wu'
-__email__ = 'anniewu2303@gmail.com'
+__maintainer__ = 'JuHunC'
+__email__ = 'joohun484@gmail.com'
 __status__ = 'Dev'
 
 logging.basicConfig(
@@ -30,7 +30,7 @@ browser.implicitly_wait(5)
 
 browser.get('https://www.instagram.com/')
 
-sleep(2)
+sleep(1)
 
 # Get the login elements and type in your credentials
 username = browser.find_element_by_name('username')
@@ -38,7 +38,7 @@ username.send_keys(USERNAME)
 password = browser.find_element_by_name('password')
 password.send_keys(PASSWORD)
 
-sleep(2)
+sleep(1)
 
 # Click the login button
 browser.find_element_by_xpath("//*[@id='loginForm']/div/div[3]/button").click()
@@ -53,7 +53,7 @@ try:
 except:
     pass
 
-sleep(2)
+sleep(1)
 
 logger.info(f'Logged in to {USERNAME}')
 
@@ -64,7 +64,7 @@ try:
 except Exception:
     pass
 
-sleep(2)
+sleep(1)
 
 # Turn on notifications? Not now
 try:
@@ -73,7 +73,7 @@ try:
 except Exception:
     pass
 
-sleep(2)
+sleep(1)
 
 # Keep track of how many you like and comment
 likes = 0
@@ -86,27 +86,29 @@ for hashtag in hashtag_list:
     browser.get(
         f'https://www.instagram.com/explore/tags/{hashtag_list[tag_index]}/')
     logger.info(f'Exploring #{hashtag}')
-    sleep(5)
+    sleep(1)
 
     # Click first thumbnail to open
     first_thumbnail = browser.find_element_by_xpath(
-        "//*[@id='react-root']/div/div/section/main/article/div[1]/div/div/div[1]/div[1]/a/div/div[2]")
+        "//*[@id='react-root']/section/main/article/div[1]/div/div/div[1]/div[1]/a/div/div[2]")
     first_thumbnail.click()
 
     # Go through x number of photos per hashtag
     for post in range(1, number_of_posts):
 
-        # Check if the post is already liked
-        # If not, then like, comment, and go to next post
-        try:
-            browser.find_element_by_xpath("//*[@aria-label='Unlike']")
-            logger.info("Already liked this post")
-        except Exception:
-            # Like
-            browser.find_element_by_xpath("//*[@aria-label='Like']").click()
-            logger.info("Liked")
-            likes += 1
+        if enable_like:
+            # Check if the post is already liked
+            # If not, then like, comment, and go to next post
+            try:
+                browser.find_element_by_xpath("//*[@aria-label='좋아요 취소']")
+                logger.info("Already liked this post")
+            except Exception:
+                # Like
+                browser.find_element_by_xpath("//*[@aria-label='좋아요']").click()
+                logger.info("Liked")
+                likes += 1
 
+        if enable_comment:
             # Random chance of commenting
             do_i_comment = randint(1, chance_to_comment)
             if do_i_comment == 1:
@@ -130,13 +132,14 @@ for hashtag in hashtag_list:
 
         # Go to next post
         sleep(wait_between_posts)
-        browser.find_element_by_link_text('Next').click()
+        browser.find_element_by_link_text('다음').click()
         logger.info('Getting next post')
         sleep(wait_between_posts)
 
     # Go to the next index in hashtags_list
     tag_index += 1
 
-
-logger.info(f'Liked {likes} posts')
-logger.info(f'Commented on {comments} posts')
+if enable_like:
+    logger.info(f'Liked {likes} posts')
+if enable_comment:
+    logger.info(f'Commented on {comments} posts')
